@@ -51,11 +51,15 @@ An end-to-end reference implementation for policy-driven, ML-assisted tiering ac
 
 ## Open Questions & Next Steps
 
-1. **Schema management** - Should we formalize Alembic migrations so legacy SQLite volumes are not bricked when new columns (e.g., `access_window_start`) land?  
-2. **Metric cadence** - Does `/metrics` need a background worker or materialized view so history is collected on a cadence instead of user traffic?  
-3. **Cost modeling** - Are the flat per-tier cost constants sufficient, or should they be parameterized per dataset or per tenant?  
-4. **Movement safety** - Do we need a two-phase commit (lock + verify) before updating dataset tiers to handle concurrent writes?  
-5. **Access governance** - How granular should future access controls be (per-tenant API tokens, RBAC, or org-level quotas)?
+I built this stack end-to-end myself, so the most valuable feedback is on architecture and data plumbing rather than UI polish. A few items I would love guidance on:
+1. **Schema management** – Should these migrations move to Alembic so existing SQLite volumes are never bricked when a new column lands?  
+2. **Metric cadence** – Would you prefer a lightweight worker (or database job) that takes `/metrics` snapshots on a schedule instead of tying history to user traffic?  
+3. **Cost modeling** – Are the flat per-tier cost constants acceptable for a hackathon prototype, or should they be parameterized per dataset/tenant in the next iteration?  
+4. **Movement safety** – Is a two-phase copy/verify/commit flow necessary to guard against concurrent writes, or is the current copy-verify-delete loop enough for this scope?  
+5. **Access governance** – What is the expectation around auth (per-tenant API tokens, RBAC, org quotas)? The brief was open-ended, so I focused on the data plane first.  
+6. **Operational ownership** – Would the judging panel like to see automated incident hooks (PagerDuty/webhooks) or is the existing observability footprint sufficient?
+If there are other production levers you want explored, please call them out—I’m happy to dive deeper on the core tech stack rather than cosmetic enhancements.
+
 
 ## License
 
