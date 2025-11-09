@@ -8,17 +8,33 @@ An end-to-end reference implementation for policy-driven, ML-assisted tiering ac
 - **Coordinated moves** - Decisions publish to Kafka, a mover service executes copy/verify flows against MinIO, and status updates flow back to the API.
 - **Operational telemetry** - Metrics capture tier distribution, cost estimates, and movement success rates for dashboard consumption.
 
-## Architecture at a Glance
-
-| Component  | Technology           | Responsibility                                      |
-|------------|----------------------|-----------------------------------------------------|
-| Backend    | FastAPI, SQLAlchemy  | API surface, business logic, metrics persistence    |
-| ML Engine  | scikit-learn         | Tier predictions + metadata persistence             |
-| Producer   | Kafka, Requests      | Synthetic access load and auto decision triggers    |
-| Mover      | Kafka consumer, MinIO| Executes copy/verify/delete flows between buckets   |
-| Dashboard  | Streamlit, Plotly    | Observability and operator controls                 |
-| Storage    | MinIO                | Hot / warm / cold buckets used by the mover         |
-
+## Architecture at a CANVAS
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                 Experience                                  │
+│  • Streamlit dashboard (observability, controls)                             │
+│  • FastAPI docs / CLI for operators                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────┬─────────────────────────────────────────┐
+│            Control Plane          │              Intelligence               │
+│  • FastAPI services               │  • scikit-learn RandomForest model      │
+│  • SQLAlchemy ORM + SQLite        │  • Rule-based fallback + metadata store │
+│  • REST endpoints (/datasets, /metrics, /ml)                                 │
+│  • Metric snapshots + migrations                                          │
+└───────────────────────────────────┴─────────────────────────────────────────┘
+┌──────────────────────────────┬──────────────────────────────────────────────┐
+│         Data Motion          │                Storage Tiers                 │
+│  • Kafka topics (access, move)│  • MinIO buckets: hot / warm / cold          │
+│  • Producer simulates traffic│  • Mover copies, verifies, updates status    │
+│  • Mover consumes and executes│ • Versioned object paths per dataset        │
+└──────────────────────────────┴──────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               Observability                                 │
+│  • Metrics endpoint feeds dashboard                                          │
+│  • Logs via Python logging + Docker                                         │
+│  • Questions raised for migration cadence and cost modeling                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 ## Getting Started
 
 1. **Install dependencies** - Docker and Docker Compose v2 or later are required. Local Python installs are optional because the stack runs in containers.
